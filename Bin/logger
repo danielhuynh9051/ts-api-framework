@@ -1,0 +1,73 @@
+#!/bin/bash
+COMMAND=""
+FILENAME=""
+BACKUP=true
+BASH_PATH="$(pwd)"
+
+function setVariable () {
+    case "$1" in
+        --command)
+            COMMAND="$2"
+        ;;
+        --filename)
+            FILENAME="$2"
+        ;;
+        --backup)
+            BACKUP="$2"
+        ;;
+    esac
+}
+
+function backup () {
+    cd $LOG_DIR
+    
+    if [ $BACKUP != true ]; then
+        exit
+    fi
+
+    for file in $FILENAME-*.log; do
+        if [ -f "$file" ] && [ $file != $LOG_FILE ]; then
+            OLD_FILENAME="${file%.log}"
+            tar --remove-files -czf "$OLD_FILENAME.tar.gz" "$file"
+            echo "INFO: Backed-up old $FILENAME log files"
+        fi
+    done
+    exit
+}
+
+for i in "$@"; do
+    ARG="$(echo "$i" | cut -d'=' -f 1)"
+    VAL="${i:${#ARG}+1}"
+    setVariable "$ARG" "$VAL"
+done
+
+if [ -z "$COMMAND" ] || [ -z "$FILENAME" ]; then
+    >&2 echo "ERROR: Must have both of --command and --filename arguments"
+    exit
+fi
+
+LOG_DIR="Logs"
+LOG_FILE="$FILENAME-$(date +'%Y%m%d' -u).log"
+LOG_TIME="$(date +'%Y-%m-%d %H:%M:%S %:z' -u)"
+
+echo ""
+echo "Running command:"
+echo "> cd $BASH_PATH"
+echo "> $COMMAND"
+echo ""
+
+# Backup old log files
+# backup
+backup &>/dev/null &
+
+RESULT=$($COMMAND 2> >(while read line; do echo -e "\e[31m$line\e[0m" >&1; done))
+echo "$RESULT"
+
+echo "-----------------------[$LOG_TIME]-----------------------
+Command:
+> cd $BASH_PATH
+> $COMMAND
+
+$RESULT
+" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" >> $LOG_DIR/$LOG_FILE
+exit

@@ -1,0 +1,16 @@
+#!/bin/bash
+BASH_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+BIN_DIR=./Bin
+cd "$BASH_PATH"
+
+if [ -z  "$1" ]; then
+    >&2 echo -e "\e[31mERROR: Must have type of CLI\e[0m"
+    exit
+fi
+
+if [ ! -f "$BIN_DIR/$1" ]; then
+    >&2 echo -e "\e[31mERROR: $1 CLI doesn't exist\e[0m"
+    exit
+fi
+
+"$BIN_DIR/$1" ${@:2}

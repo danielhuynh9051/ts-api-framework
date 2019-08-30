@@ -1,0 +1,5 @@
+export enum Reason {
+    DISABLE = 'DISABLE',
+    CHANGE_PASSWORD = 'CHANGE_PASSWORD',
+    CHANGE_ROLE = 'CHANGE_ROLE'
+}

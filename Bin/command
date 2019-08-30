@@ -1,0 +1,4 @@
+#!/bin/bash
+BASH_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+"$BASH_PATH/logger" --command="./node_modules/.bin/ts-node --files index.ts -- --command $*" --filename="command-$(cut -d "=" -f 2 <<< $1)"
